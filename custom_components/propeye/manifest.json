@@ -1,0 +1,14 @@
+{
+    "domain": "propeye",
+    "name": "Propeye",
+    "codeowners": [],
+    "config_flow": true,
+    "dependencies": [],
+    "documentation": "https://github.com/bjesus/propeye-ha-integration",
+    "iot_class": "cloud_polling",
+    "requirements": [
+        "grpcio==1.75.1",
+        "protobuf==6.32.0"
+    ],
+    "version": "1.0.0"
+}

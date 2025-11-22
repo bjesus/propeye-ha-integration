@@ -1,0 +1,62 @@
+syntax = "proto3";
+
+package propeyegrpc.tenantapp;
+
+service TenantApp {
+  rpc Authenticate (AuthenticateRequest) returns (AuthenticateResponse);
+  rpc GetMeterTypeValues (GetMeterTypeValuesRequest) returns (GetMeterTypeValuesResponse);
+}
+
+// === AUTHENTICATION ===
+
+message AuthenticateRequest {
+  string email = 1;
+  string password = 2;
+}
+
+message AuthenticateResponse {
+  string token_jwt = 1;
+  int32 expiry_seconds = 2;
+  string refresh_token = 3;
+}
+
+// === METER VALUES ===
+
+message TimestampWrapper {
+  int64 timestamp = 1;
+  int32 unknown_field_2 = 2;
+}
+
+message GetMeterTypeValuesRequest {
+  int64 location_id = 1;
+  string meter_type = 2;
+  int32 unknown_field_3 = 3;
+  int32 max_results = 4;
+  TimestampWrapper start_date = 5;
+  TimestampWrapper end_date = 6;
+  int32 unknown_field_7 = 7;
+  int32 unknown_field_8 = 8;
+  int32 unknown_field_9 = 9;
+}
+
+message NestedTimestamp {
+  int64 timestamp = 1;
+}
+
+message UnknownField2 {
+  int64 unknown_field_1 = 1; 
+  int64 unknown_field_2 = 2; 
+}
+
+message ValueEntry {
+  NestedTimestamp start_timestamp = 1;
+  UnknownField2 unknown_struct_2 = 2; 
+  // FIELD 3 MUST BE DOUBLE
+  double reading_value = 3; 
+}
+
+message GetMeterTypeValuesResponse {
+  repeated ValueEntry data_points = 1; 
+  NestedTimestamp start_date_echo = 2;
+  NestedTimestamp end_date_echo = 3;
+}

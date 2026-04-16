@@ -1,13 +1,14 @@
 """Config flow for Propeye integration."""
-import logging
-import grpc
-from typing import Any, Dict, Optional
+from __future__ import annotations
 
+import logging
+from typing import Any
+
+import grpc
 import voluptuous as vol
 
-from homeassistant import config_entries
+from homeassistant.config_entries import ConfigFlow, ConfigFlowResult
 from homeassistant.const import CONF_EMAIL, CONF_PASSWORD
-from homeassistant.data_entry_flow import FlowResult
 
 from .const import DOMAIN, DEFAULT_HOST, DEFAULT_PORT
 from . import tenant_app_pb2 as pb
@@ -22,16 +23,16 @@ STEP_USER_DATA_SCHEMA = vol.Schema(
     }
 )
 
-class PropeyeConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
+class PropeyeConfigFlow(ConfigFlow, domain=DOMAIN):
     """Handle a config flow for Propeye."""
 
     VERSION = 1
 
     async def async_step_user(
-        self, user_input: Optional[Dict[str, Any]] = None
-    ) -> FlowResult:
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
         """Handle the initial step."""
-        errors: Dict[str, str] = {}
+        errors: dict[str, str] = {}
 
         if user_input is not None:
             email = user_input[CONF_EMAIL]

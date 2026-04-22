@@ -173,9 +173,13 @@ class PropeyeDataUpdateCoordinator(DataUpdateCoordinator):
             hour=23, minute=59, second=59, microsecond=0
         )
 
-        # Fetch from 12 hours ago so recently-backfilled hours are
-        # included even if they originally fell before our last poll.
-        fetch_start = now_local - datetime.timedelta(hours=12)
+        # Fetch from 12 hours ago OR midnight (whichever is earlier) so
+        # that all of today is always included and recently-backfilled
+        # hours from the past few hours are picked up too.
+        fetch_start = min(
+            start_of_day,
+            now_local - datetime.timedelta(hours=12),
+        )
 
         fetch_start_ts = int(fetch_start.timestamp())
         today_ts = int(start_of_day.timestamp())

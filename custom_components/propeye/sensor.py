@@ -152,13 +152,20 @@ class PropeyeDataUpdateCoordinator(DataUpdateCoordinator):
     # ------------------------------------------------------------------
 
     def _fetch_data(self) -> dict:
-        """Fetch today's hourly energy data (runs in executor thread)."""
+        """Fetch hourly energy data (runs in executor thread).
+
+        We query the last 12 hours instead of only today-since-midnight
+        so that the API's backfilled values for recently-completed hours
+        are picked up.  Only data points that fall within today are used
+        for ``total_today`` (the sensor state); earlier points are
+        discarded.
+        """
         token = self._ensure_token()
         stub = self._get_stub()
 
-        # Build timezone-aware day boundaries using HA's configured timezone
         local_tz = dt_util.get_default_time_zone()
         now_local = datetime.datetime.now(tz=local_tz)
+
         start_of_day = now_local.replace(
             hour=0, minute=0, second=0, microsecond=0
         )
@@ -166,7 +173,12 @@ class PropeyeDataUpdateCoordinator(DataUpdateCoordinator):
             hour=23, minute=59, second=59, microsecond=0
         )
 
-        start_ts = int(start_of_day.timestamp())
+        # Fetch from 12 hours ago so recently-backfilled hours are
+        # included even if they originally fell before our last poll.
+        fetch_start = now_local - datetime.timedelta(hours=12)
+
+        fetch_start_ts = int(fetch_start.timestamp())
+        today_ts = int(start_of_day.timestamp())
         end_ts = int(end_of_day.timestamp())
 
         req = pb.GetMeterTypeValuesRequest(
@@ -175,7 +187,7 @@ class PropeyeDataUpdateCoordinator(DataUpdateCoordinator):
             unknown_field_3=0,
             max_results=500,
             start_date=pb.TimestampWrapper(
-                timestamp=start_ts, unknown_field_2=0
+                timestamp=fetch_start_ts, unknown_field_2=0
             ),
             end_date=pb.TimestampWrapper(
                 timestamp=end_ts, unknown_field_2=0
@@ -201,10 +213,8 @@ class PropeyeDataUpdateCoordinator(DataUpdateCoordinator):
         if response.data_points:
             for entry in response.data_points:
                 ts = entry.start_timestamp.timestamp
-                # Filter out data points that fall before today (the API
-                # sometimes returns a boundary point from the previous day
-                # with a zero value, which is harmless but confusing).
-                if ts < start_ts:
+                # Only count data points from today towards the total.
+                if ts < today_ts:
                     continue
 
                 val = entry.reading_value

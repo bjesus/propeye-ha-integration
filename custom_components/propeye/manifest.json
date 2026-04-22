@@ -10,5 +10,5 @@
         "grpcio==1.78.0",
         "protobuf==6.32.0"
     ],
-    "version": "1.1.0"
+    "version": "1.2.0"
 }

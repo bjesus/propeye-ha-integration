@@ -1,7 +1,9 @@
 {
     "domain": "propeye",
     "name": "Propeye",
-    "codeowners": [],
+    "codeowners": [
+        "@bjesus"
+    ],
     "config_flow": true,
     "dependencies": [],
     "documentation": "https://github.com/bjesus/propeye-ha-integration",
